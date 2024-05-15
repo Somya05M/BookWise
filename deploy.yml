@@ -13,7 +13,7 @@
 
     - name: Create Docker Network
       docker_network:
-        name: bookwise_network
+        name: my_network
 
     - name: Start Backend Container
       docker_container:
@@ -21,7 +21,9 @@
         image: "{{ DOCKER_IMAGE_NAME_BACKEND }}"
         state: started
         networks:
-          - name: bookwise_network
+          - name: my_network
+        ports:
+          - "8081:8081"
 
     - name: Start Frontend Container
       docker_container:
@@ -29,4 +31,6 @@
         image: "{{ DOCKER_IMAGE_NAME_FRONTEND }}"
         state: started
         networks:
-          - name: bookwise_network
+          - name: my_network
+        ports:
+          - "3000:3000"
