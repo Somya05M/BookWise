@@ -33,7 +33,7 @@ pipeline {
                 script {
                     docker.withRegistry('', 'DockerHubCred') {
                         // Tag and push Frontend Docker image to Docker Hub
-                        sh "docker tag frontend-image somya2001/${env.DOCKER_IMAGE_NAME_FRONTEND}:latest"
+                        sh "docker tag bookwise-frontend somya2001/${env.DOCKER_IMAGE_NAME_FRONTEND}:latest"
                         sh "docker push somya2001/${env.DOCKER_IMAGE_NAME_FRONTEND}"
                     }
                 }
@@ -45,7 +45,7 @@ pipeline {
                 script {
                     docker.withRegistry('', 'DockerHubCred') {
                         // Tag and push Backend Docker image to Docker Hub
-                        sh "docker tag backend-image somya2001/${env.DOCKER_IMAGE_NAME_BACKEND}:latest"
+                        sh "docker tag bookwise-backend somya2001/${env.DOCKER_IMAGE_NAME_BACKEND}:latest"
                         sh "docker push somya2001/${env.DOCKER_IMAGE_NAME_BACKEND}"
                     }
                 }
