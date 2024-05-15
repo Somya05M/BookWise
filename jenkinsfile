@@ -52,6 +52,15 @@ pipeline {
             }
         }
 
+        stage('Delete Running Containers') {
+            steps {
+                script {
+                    // Delete running containers
+                    sh "docker-compose -f ${env.DOCKER_COMPOSE_FILE} down"
+                }
+            }
+        }
+
         stage('Deploy with Ansible') {
             steps {
                 script {
