@@ -11,14 +11,6 @@ pipeline {
 
     stages {
 
-        stage('Run Model') {
-            steps {
-                script {
-                    sh "python book-recommender-system.py"
-                }
-            }
-        }
-
         stage('Run Docker Compose') {
             steps {
                 script {
@@ -31,8 +23,11 @@ pipeline {
         stage('Unit Test') {
             steps {
                 script {
-                    // Run unit tests using the test.py file
-                    sh "python test.py"
+                    // Run unit tests inside the Backend Docker image
+                    docker.image("${DOCKER_IMAGE_NAME_BACKEND}").inside {
+                        // Execute unit tests using the test.py file
+                        sh "python test.py"
+                    }
                 }
             }
         }
