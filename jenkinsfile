@@ -26,7 +26,8 @@ pipeline {
                     // Run unit tests inside the Backend Docker image
                     docker.image("${DOCKER_IMAGE_NAME_BACKEND}").inside {
                         // Execute unit tests using the test.py file and capture output
-                        def testOutput = sh(script: "python test.py", returnStdout: true).trim()
+                        def testOutput = sh(script: "python test.py", returnStdout: true, 
+                                            env: [BACKEND_HOST: env.BACKEND_HOST, BACKEND_PORT: env.BACKEND_PORT]).trim()
                         
                         // Print the output to the console
                         echo "Unit Test Output: ${testOutput}"
