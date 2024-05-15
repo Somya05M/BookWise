@@ -29,7 +29,6 @@ services:
       - ./similarity_scores.pkl:/app/similarity_scores.pkl
       - ./dataset:/app/dataset
       - ./book-recommender-system.ipynb:/app/book-recommender-system.ipynb
-      - ./test.py:/app/test.py
     networks:
       - app-network
 
