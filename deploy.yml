@@ -24,11 +24,6 @@
         image: "{{ DOCKER_IMAGE_NAME_FRONTEND }}"
         state: started
 
-    - name: Install Java
-      apt:
-        name: default-jre
-        state: present
-
     - name: Install Elasticsearch
       docker_container:
         name: elasticsearch
