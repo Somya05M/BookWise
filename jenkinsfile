@@ -10,11 +10,6 @@ pipeline {
     }
 
     stages {
-        stage('Clone Repository') {
-            steps {
-                git branch: 'main', url: "${GITHUB_REPO_URL}"
-            }
-        }
 
         stage('Run Model') {
             steps {
@@ -22,7 +17,7 @@ pipeline {
                     // Install Jupyter Notebook if not already installed
                     sh "pip install jupyter"
                     // Run the Jupyter notebook
-                    sh "jupyter nbconvert --to notebook --execute ${NOTEBOOK_FILENAME}"
+                    sh "jupyter nbconvert --to notebook --execute /var/lib/jenkins/workspace/BookWise/${NOTEBOOK_FILENAME}"
                 }
             }
         }
