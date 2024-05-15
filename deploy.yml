@@ -1,5 +1,5 @@
 ---
-- name: Deploy BookWise Application
+- name: Deploy BookWise Application with ELK Stack
   hosts: localhost
   tasks:
     - name: Pull Backend Docker Image
@@ -23,3 +23,37 @@
         name: frontend_container
         image: "{{ DOCKER_IMAGE_NAME_FRONTEND }}"
         state: started
+
+    - name: Install Java
+      apt:
+        name: default-jre
+        state: present
+
+    - name: Install Elasticsearch
+      docker_container:
+        name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.0.0
+        state: started
+        ports:
+          - "9200:9200"
+          - "9300:9300"
+
+    - name: Install Logstash
+      docker_container:
+        name: logstash
+        image: docker.elastic.co/logstash/logstash:7.0.0
+        state: started
+        ports:
+          - "5000:5000"
+        volumes:
+          - "/path/to/logstash/config:/usr/share/logstash/config"
+
+    - name: Install Kibana
+      docker_container:
+        name: kibana
+        image: docker.elastic.co/kibana/kibana:7.0.0
+        state: started
+        ports:
+          - "5601:5601"
+
+#http://localhost:5601 to visit kibana dashboard
