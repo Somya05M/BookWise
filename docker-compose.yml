@@ -22,8 +22,7 @@ services:
     ports:
       - "8081:8081"
     volumes:
-      - ./backend.py:/app/backend.py  # Mount the backend.py file into the container
-      # Mount ML model files and data, assuming they are needed by the backend
+      - ./backend.py:/app/backend.py  
       - ./popular.pkl:/app/popular.pkl
       - ./pt.pkl:/app/pt.pkl
       - ./books.pkl:/app/books.pkl

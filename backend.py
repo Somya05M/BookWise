@@ -11,7 +11,7 @@ similarity_scores = pickle.load(open('similarity_scores.pkl', 'rb'))
 
 # Initialize Flask application
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}},methods=['GET', 'POST'])
+CORS(app, resources={r"/*": {"origins": "*"}},methods=['GET', 'POST'])
 
 app = Flask(__name__)
 cors = CORS(app)
