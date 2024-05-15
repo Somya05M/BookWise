@@ -2,6 +2,11 @@
 - name: Deploy BookWise Application with ELK Stack
   hosts: localhost
   tasks:
+    - name: Create custom network
+      docker_network:
+        name: app-network
+        state: present
+
     - name: Pull Backend Docker Image
       docker_image:
         name: "{{ DOCKER_IMAGE_NAME_BACKEND }}"
@@ -17,38 +22,46 @@
         name: backend_container
         image: "{{ DOCKER_IMAGE_NAME_BACKEND }}"
         state: started
+        networks:
+          - name: app-network
 
     - name: Start Frontend Container
       docker_container:
         name: frontend_container
         image: "{{ DOCKER_IMAGE_NAME_FRONTEND }}"
         state: started
+        networks:
+          - name: app-network
 
-    - name: Install Elasticsearch
-      docker_container:
-        name: elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.0.0
-        state: started
-        ports:
-          - "9200:9200"
-          - "9300:9300"
+    # - name: Install Elasticsearch
+    #   docker_container:
+    #     name: elasticsearch
+    #     image: docker.elastic.co/elasticsearch/elasticsearch:7.0.0
+    #     state: started
+    #     ports:
+    #       - "9200:9200"
+    #       - "9300:9300"
+    #     networks:
+    #       - name: app-network
 
-    - name: Install Logstash
-      docker_container:
-        name: logstash
-        image: docker.elastic.co/logstash/logstash:7.0.0
-        state: started
-        ports:
-          - "5000:5000"
-        volumes:
-          - "/path/to/logstash/config:/usr/share/logstash/config"
+    # - name: Install Logstash
+    #   docker_container:
+    #     name: logstash
+    #     image: docker.elastic.co/logstash/logstash:7.0.0
+    #     state: started
+    #     ports:
+    #       - "5000:5000"
+    #     volumes:
+    #       - "/path/to/logstash/config:/usr/share/logstash/config"
+    #     networks:
+    #       - name: app-network
 
-    - name: Install Kibana
-      docker_container:
-        name: kibana
-        image: docker.elastic.co/kibana/kibana:7.0.0
-        state: started
-        ports:
-          - "5601:5601"
-
-#http://localhost:5601 to visit kibana dashboar
+    # - name: Install Kibana
+    #   docker_container:
+    #     name: kibana
+    #     image: docker.elastic.co/kibana/kibana:7.0.0
+    #     state: started
+    #     ports:
+    #       - "5601:5601"
+    #     networks:
+    #       - name: app-network
