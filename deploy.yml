@@ -26,6 +26,7 @@
 
     - name: Install Java
       apt:
+        become: true
         name: default-jre
         state: present
 
