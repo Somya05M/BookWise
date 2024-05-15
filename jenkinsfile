@@ -9,11 +9,6 @@ pipeline {
         NOTEBOOK_FILENAME = 'book-recommender-system.py'
     }
 
-    tools {
-        python 'Python3' 
-    }
-
-
     stages {
         stage('Run Docker Compose') {
             steps {
