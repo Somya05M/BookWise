@@ -16,5 +16,5 @@ COPY popular.pkl pt.pkl books.pkl similarity_scores.pkl /app/
 # Make port 8081 available to the world outside this container
 EXPOSE 8081
 
-# Run backend.py when the container launches
+# Run backend.py when the container launche
 CMD ["python", "backend.py"]
