@@ -15,7 +15,7 @@ pipeline {
             steps {
                 script {
                     // Delete running containers
-                    sh "docker rm -f $(docker ps -a)"
+                    sh "docker rm -f \$(docker ps -a)"
                 }
             }
         }
