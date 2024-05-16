@@ -33,15 +33,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Unit Test') {
-            steps {
-                script {
-                    // Run the Python test script directly
-                    sh "python3 test.py"
-                }
-            }
-        }
         
         stage('Push Docker Images Frontend') {
             steps {
@@ -67,7 +58,7 @@ pipeline {
             }
         }
 
-        stage('Unit Test 2') {
+        stage('Unit Test') {
             steps {
                 script {
                     // Run the Python test script directly
@@ -75,7 +66,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Stop Docker Compose') {
             steps {
                 script {
