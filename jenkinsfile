@@ -33,7 +33,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Push Docker Images Frontend') {
             steps {
                 script {
@@ -70,7 +70,7 @@ pipeline {
         stage('Stop Docker Compose') {
             steps {
                 script {
-                    // Delete running containers
+                    // Delete running container
                     sh "docker-compose -f ${env.DOCKER_COMPOSE_FILE} down"
                 }
             }
