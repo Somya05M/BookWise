@@ -14,8 +14,13 @@ pipeline {
         stage('Delete All Running Container') {
             steps {
                 script {
-                    // Delete running containers
-                    sh "docker rm -f \$(docker ps -a)"
+            // Delete running containers
+                    try {
+                        sh "docker rm -f \$(docker ps -a)"
+                    } catch (Exception e) {
+                        // Ignore any errors
+                        echo "Ignoring error: ${e.message}"
+                    }
                 }
             }
         }
