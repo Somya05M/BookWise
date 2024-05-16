@@ -13,8 +13,6 @@ pipeline {
         stage('Run Model') {
             steps {
                 script {
-                    // Convert notebook to Python script
-                    sh "jupyter nbconvert --to script book-recommender-system.ipynb"
                     sh "python3 book-recommender-system.py"
                 }
             }
