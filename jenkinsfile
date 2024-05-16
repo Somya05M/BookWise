@@ -83,10 +83,13 @@ pipeline {
                 script {
                     ansiblePlaybook(
                         playbook: 'deploy.yml',
-                        inventory: 'inventory',
+                        inventory: 'localhost,', // Notice the comma after localhost
                         extraVars: [
                             DOCKER_IMAGE_NAME_BACKEND: env.DOCKER_IMAGE_NAME_BACKEND,
-                            DOCKER_IMAGE_NAME_FRONTEND: env.DOCKER_IMAGE_NAME_FRONTEND
+                            DOCKER_IMAGE_NAME_FRONTEND: env.DOCKER_IMAGE_NAME_FRONTEND,
+                            ELASTICSEARCH_IMAGE: 'docker.elastic.co/elasticsearch/elasticsearch:7.16.3', // Use the specific Elasticsearch version
+                            LOGSTASH_IMAGE: 'docker.elastic.co/logstash/logstash:7.16.3', // Use the specific Logstash version
+                            KIBANA_IMAGE: 'docker.elastic.co/kibana/kibana:7.16.3' // Use the specific Kibana version
                         ]
                     )
                 }
