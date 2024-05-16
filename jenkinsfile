@@ -67,6 +67,15 @@ pipeline {
             }
         }
 
+        stage('Unit Test 2') {
+            steps {
+                script {
+                    // Run the Python test script directly
+                    sh "python3 test.py"
+                }
+            }
+        }
+        
         stage('Stop Docker Compose') {
             steps {
                 script {
@@ -76,14 +85,7 @@ pipeline {
             }
         }
 
-        stage('Unit Test 2') {
-            steps {
-                script {
-                    // Run the Python test script directly
-                    sh "python3 test.py"
-                }
-            }
-        }
+        
 
         stage('Deploy with Ansible') {
             steps {
