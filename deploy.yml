@@ -1,5 +1,6 @@
 - name: Deploy BookWise Application with ELK Stack
   hosts: localhost
+  connection: local
   tasks:
     - name: Pull Elasticsearch Docker Image
       docker_image:
