@@ -62,7 +62,7 @@ pipeline {
             }
         }
 
-        stage('Unit Test') {
+        stage('Unit Test 2') {
             steps {
                 script {
                     // Run the Python test script directly
@@ -70,7 +70,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deploy with Ansible') {
             steps {
                 script {
