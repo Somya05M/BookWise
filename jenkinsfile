@@ -62,6 +62,15 @@ pipeline {
             }
         }
 
+        stage('Unit Test') {
+            steps {
+                script {
+                    // Run the Python test script directly
+                    sh "python3 test.py"
+                }
+            }
+        }
+        
         stage('Deploy with Ansible') {
             steps {
                 script {
