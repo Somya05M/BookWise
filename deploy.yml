@@ -37,47 +37,47 @@
         ports:
           - "3000:3000"
 
-    - name: Pull Elasticsearch Docker Image
-      docker_image:
-        name: "{{ ELASTICSEARCH_IMAGE }}"
-        source: pull
+    # - name: Pull Elasticsearch Docker Image
+    #   docker_image:
+    #     name: "{{ ELASTICSEARCH_IMAGE }}"
+    #     source: pull
 
-    - name: Pull Logstash Docker Image
-      docker_image:
-        name: "{{ LOGSTASH_IMAGE }}"
-        source: pull
+    # - name: Pull Logstash Docker Image
+    #   docker_image:
+    #     name: "{{ LOGSTASH_IMAGE }}"
+    #     source: pull
 
-    - name: Pull Kibana Docker Image
-      docker_image:
-        name: "{{ KIBANA_IMAGE }}"
-        source: pull
+    # - name: Pull Kibana Docker Image
+    #   docker_image:
+    #     name: "{{ KIBANA_IMAGE }}"
+    #     source: pull
 
-    - name: Create Docker Network
-      docker_network:
-        name: my_network
+    # - name: Create Docker Network
+    #   docker_network:
+    #     name: my_network
 
-    - name: Start Elasticsearch Container
-      docker_container:
-        name: elasticsearch_container
-        image: "{{ ELASTICSEARCH_IMAGE }}"
-        state: started
-        networks:
-          - name: my_network
+    # - name: Start Elasticsearch Container
+    #   docker_container:
+    #     name: elasticsearch_container
+    #     image: "{{ ELASTICSEARCH_IMAGE }}"
+    #     state: started
+    #     networks:
+    #       - name: my_network
 
-    - name: Start Logstash Container
-      docker_container:
-        name: logstash_container
-        image: "{{ LOGSTASH_IMAGE }}"
-        state: started
-        networks:
-          - name: my_network
+    # - name: Start Logstash Container
+    #   docker_container:
+    #     name: logstash_container
+    #     image: "{{ LOGSTASH_IMAGE }}"
+    #     state: started
+    #     networks:
+    #       - name: my_network
 
-    - name: Start Kibana Container
-      docker_container:
-        name: kibana_container
-        image: "{{ KIBANA_IMAGE }}"
-        state: started
-        networks:
-          - name: my_network
-        ports:
-          - "5601:5601"
+    # - name: Start Kibana Container
+    #   docker_container:
+    #     name: kibana_container
+    #     image: "{{ KIBANA_IMAGE }}"
+    #     state: started
+    #     networks:
+    #       - name: my_network
+    #     ports:
+    #       - "5601:5601"
