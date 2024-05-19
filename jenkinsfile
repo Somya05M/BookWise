@@ -6,6 +6,9 @@ pipeline {
                 kind: Pod
                 spec:
                   containers:
+                  - name: jnlp
+                    image: jenkins/inbound-agent:4.11-1
+                    tty: true
                   - name: frontend-builder
                     image: docker:19.03.13
                     command:
@@ -16,7 +19,17 @@ pipeline {
                     command:
                     - cat
                     tty: true
-                '''
+            '''
+            containerTemplate {
+                name 'frontend-builder'
+                image 'docker:19.03.13'
+                tty true
+            }
+            containerTemplate {
+                name 'backend-builder'
+                image 'docker:19.03.13'
+                tty true
+            }
         }
     }
 
@@ -27,6 +40,7 @@ pipeline {
         FRONTEND_DEPLOYMENT_FILE = 'frontend-deployment.yml'
         BACKEND_DEPLOYMENT_FILE = 'backend-deployment.yml'
         KUBE_NAMESPACE = 'jenkins'  // Specify your namespace here
+        KUBE_CONTEXT = 'your-kube-context'  // Specify your Kubernetes context here
     }
 
     stages {
@@ -35,7 +49,8 @@ pipeline {
                 script {
                     try {
                         // Run Docker containers to build images
-                        sh "docker-compose up -d --build"
+                        sh "docker build -t ${DOCKER_IMAGE_NAME_BACKEND} ."
+                        sh "docker build -t ${DOCKER_IMAGE_NAME_FRONTEND} ."
                     } catch (Exception e) {
                         error "Failed to run Docker containers: ${e.message}"
                     }
@@ -45,13 +60,15 @@ pipeline {
 
         stage('Build and Push Docker Images Frontend') {
             steps {
-                script {
-                    try {
-                        // Build and push Frontend Docker image to Docker Hub
-                        sh "docker build -t somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest ."
-                        sh "docker push somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest"
-                    } catch (Exception e) {
-                        error "Failed to build and push Frontend Docker image: ${e.message}"
+                container('frontend-builder') {
+                    script {
+                        try {
+                            // Build and push Frontend Docker image to Docker Hub
+                            sh "docker build -t somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest ."
+                            sh "docker push somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest"
+                        } catch (Exception e) {
+                            error "Failed to build and push Frontend Docker image: ${e.message}"
+                        }
                     }
                 }
             }
@@ -59,13 +76,15 @@ pipeline {
 
         stage('Build and Push Docker Images Backend') {
             steps {
-                script {
-                    try {
-                        // Build and push Backend Docker image to Docker Hub
-                        sh "docker build -t somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest ."
-                        sh "docker push somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest"
-                    } catch (Exception e) {
-                        error "Failed to build and push Backend Docker image: ${e.message}"
+                container('backend-builder') {
+                    script {
+                        try {
+                            // Build and push Backend Docker image to Docker Hub
+                            sh "docker build -t somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest ."
+                            sh "docker push somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest"
+                        } catch (Exception e) {
+                            error "Failed to build and push Backend Docker image: ${e.message}"
+                        }
                     }
                 }
             }
@@ -73,12 +92,14 @@ pipeline {
 
         stage('Unit Test') {
             steps {
-                script {
-                    try {
-                        // Run the Python test script directly
-                        sh "python3 test.py"
-                    } catch (Exception e) {
-                        error "Unit tests failed: ${e.message}"
+                container('backend-builder') {
+                    script {
+                        try {
+                            // Run the Python test script directly
+                            sh "python3 test.py"
+                        } catch (Exception e) {
+                            error "Unit tests failed: ${e.message}"
+                        }
                     }
                 }
             }
@@ -86,12 +107,14 @@ pipeline {
 
         stage('Deploy Frontend to Kubernetes') {
             steps {
-                script {
-                    try {
-                        // Ensure the environment variables are accessible within the script block
-                        sh "kubectl apply -f ${env.FRONTEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
-                    } catch (Exception e) {
-                        error "Failed to deploy frontend to Kubernetes: ${e.message}"
+                container('frontend-builder') {
+                    script {
+                        try {
+                            // Deploy frontend to Kubernetes
+                            sh "kubectl apply -f ${env.FRONTEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE} --context=${KUBE_CONTEXT}"
+                        } catch (Exception e) {
+                            error "Failed to deploy frontend to Kubernetes: ${e.message}"
+                        }
                     }
                 }
             }
@@ -99,12 +122,14 @@ pipeline {
 
         stage('Deploy Backend to Kubernetes') {
             steps {
-                script {
-                    try {
-                        // Ensure the environment variables are accessible within the script block
-                        sh "kubectl apply -f ${env.BACKEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
-                    } catch (Exception e) {
-                        error "Failed to deploy backend to Kubernetes: ${e.message}"
+                container('backend-builder') {
+                    script {
+                        try {
+                            // Deploy backend to Kubernetes
+                            sh "kubectl apply -f ${env.BACKEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE} --context=${KUBE_CONTEXT}"
+                        } catch (Exception e) {
+                            error "Failed to deploy backend to Kubernetes: ${e.message}"
+                        }
                     }
                 }
             }
