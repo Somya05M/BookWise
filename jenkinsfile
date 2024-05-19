@@ -11,42 +11,42 @@ pipeline {
     }
 
     stages {
-        // stage('Setup Kubernetes Resources') {
-        //     agent {
-        //         kubernetes {
-        //             // Use the Jenkins Kubernetes cloud configuration
-        //             cloud 'kubernetes'
-        //             label 'build-pod'
-        //             defaultContainer 'jnlp'
-        //             yaml """
-        //             apiVersion: v1
-        //             kind: Pod
-        //             metadata:
-        //               labels:
-        //                 jenkins: build-pod
-        //             spec:
-        //               containers:
-        //               - name: docker
-        //                 image: docker:19.03.12
-        //                 command:
-        //                 - cat
-        //                 tty: true
-        //             """
-        //         }
-        //     }
-        //     steps {
-        //         script {
-        //             withCredentials([string(credentialsId: 'jenkins-secret')]) {
-        //                 try {
-        //                     // Create service account with admin permissions
-        //                     sh "kubectl apply -f service-account.yml -n ${env.KUBE_NAMESPACE}"
-        //                 } catch (Exception e) {
-        //                     error "Failed to setup Kubernetes resources: ${e.message}"
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Setup Kubernetes Resources') {
+            agent {
+                kubernetes {
+                    // Use the Jenkins Kubernetes cloud configuration
+                    cloud 'kubernetes'
+                    label 'build-pod'
+                    defaultContainer 'jnlp'
+                    yaml """
+                    apiVersion: v1
+                    kind: Pod
+                    metadata:
+                      labels:
+                        jenkins: build-pod
+                    spec:
+                      containers:
+                      - name: docker
+                        image: docker:19.03.12
+                        command:
+                        - cat
+                        tty: true
+                    """
+                }
+            }
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'jenkins-secret')]) {
+                        try {
+                            // Create service account with admin permissions
+                            sh "kubectl apply -f service-account.yml -n ${env.KUBE_NAMESPACE}"
+                        } catch (Exception e) {
+                            error "Failed to setup Kubernetes resources: ${e.message}"
+                        }
+                    }
+                }
+            }
+        }
 
         stage('Run Docker Containers') {
             steps {
