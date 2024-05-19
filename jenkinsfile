@@ -1,5 +1,24 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml '''
+              apiVersion: v1
+              kind: Pod
+              spec:
+                containers:
+                - name: docker
+                  image: docker:19.03.12
+                  command:
+                  - cat
+                  tty: true
+                - name: kubectl
+                  image: lachlanevenson/k8s-kubectl:v1.18.0
+                  command:
+                  - cat
+                  tty: true
+            '''
+        }
+    }
 
     environment {
         DOCKER_IMAGE_NAME_BACKEND = 'bookwise-backend'
@@ -11,23 +30,37 @@ pipeline {
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                container('docker') {
+                    script {
+                        // Clone the repository
+                        sh "git clone ${GITHUB_REPO_URL} ."
+                    }
+                }
+            }
+        }
 
         stage('Run Docker Containers') {
             steps {
-                script {
-                    // Run Docker containers to build images
-                    sh "docker-compose up -d --build"
+                container('docker') {
+                    script {
+                        // Run Docker containers to build images
+                        sh "docker-compose up -d --build"
+                    }
                 }
             }
         }
 
         stage('Push Docker Images Frontend') {
             steps {
-                script {
-                    docker.withRegistry('', 'DockerHubCred') {
-                        // Tag and push Frontend Docker image to Docker Hub
-                        sh "docker tag ${DOCKER_IMAGE_NAME_FRONTEND} somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest"
-                        sh "docker push somya2001/${DOCKER_IMAGE_NAME_FRONTEND}"
+                container('docker') {
+                    script {
+                        docker.withRegistry('', 'DockerHubCred') {
+                            // Tag and push Frontend Docker image to Docker Hub
+                            sh "docker tag ${DOCKER_IMAGE_NAME_FRONTEND} somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest"
+                            sh "docker push somya2001/${DOCKER_IMAGE_NAME_FRONTEND}"
+                        }
                     }
                 }
             }
@@ -35,11 +68,13 @@ pipeline {
 
         stage('Push Docker Images Backend') {
             steps {
-                script {
-                    docker.withRegistry('', 'DockerHubCred') {
-                        // Tag and push Backend Docker image to Docker Hub
-                        sh "docker tag ${DOCKER_IMAGE_NAME_BACKEND} somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest"
-                        sh "docker push somya2001/${DOCKER_IMAGE_NAME_BACKEND}"
+                container('docker') {
+                    script {
+                        docker.withRegistry('', 'DockerHubCred') {
+                            // Tag and push Backend Docker image to Docker Hub
+                            sh "docker tag ${DOCKER_IMAGE_NAME_BACKEND} somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest"
+                            sh "docker push somya2001/${DOCKER_IMAGE_NAME_BACKEND}"
+                        }
                     }
                 }
             }
@@ -47,26 +82,30 @@ pipeline {
 
         stage('Unit Test') {
             steps {
-                script {
-                    // Run the Python test script directly
-                    sh "python3 test.py"
+                container('docker') {
+                    script {
+                        // Run the Python test script directly
+                        sh "python3 test.py"
+                    }
                 }
             }
         }
-        
+
         stage('Deploy Frontend to Kubernetes') {
             steps {
-                script {
-                    // Retrieve Kubernetes configuration from Jenkins credentials
-                    withCredentials([string(credentialsId: 'jenkins-secret', variable: 'KUBECONFIG')]) {
-                        // Set KUBECONFIG environment variable
-                        sh "export KUBECONFIG=\$KUBECONFIG"
+                container('kubectl') {
+                    script {
+                        // Retrieve Kubernetes configuration from Jenkins credentials
+                        withCredentials([string(credentialsId: 'jenkins-secret', variable: 'KUBECONFIG')]) {
+                            // Set KUBECONFIG environment variable
+                            sh "export KUBECONFIG=\$KUBECONFIG"
 
-                        // Check the value of KUBECONFIG
-                        sh "echo \$KUBECONFIG"
+                            // Check the value of KUBECONFIG
+                            sh "echo \$KUBECONFIG"
 
-                        // Deploy frontend to Kubernetes
-                        sh "kubectl apply -f ${FRONTEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
+                            // Deploy frontend to Kubernetes
+                            sh "kubectl apply -f ${FRONTEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
+                        }
                     }
                 }
             }
@@ -74,17 +113,19 @@ pipeline {
 
         stage('Deploy Backend to Kubernetes') {
             steps {
-                script {
-                    // Retrieve Kubernetes configuration from Jenkins credentials
-                    withCredentials([string(credentialsId: 'jenkins-secret', variable: 'KUBECONFIG')]) {
-                        // Set KUBECONFIG environment variable
-                        sh "export KUBECONFIG=\$KUBECONFIG"
+                container('kubectl') {
+                    script {
+                        // Retrieve Kubernetes configuration from Jenkins credentials
+                        withCredentials([string(credentialsId: 'jenkins-secret', variable: 'KUBECONFIG')]) {
+                            // Set KUBECONFIG environment variable
+                            sh "export KUBECONFIG=\$KUBECONFIG"
 
-                        // Check the value of KUBECONFIG
-                        sh "echo \$KUBECONFIG"
+                            // Check the value of KUBECONFIG
+                            sh "echo \$KUBECONFIG"
 
-                        // Deploy backend to Kubernetes
-                        sh "kubectl apply -f ${BACKEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
+                            // Deploy backend to Kubernetes
+                            sh "kubectl apply -f ${BACKEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
+                        }
                     }
                 }
             }
