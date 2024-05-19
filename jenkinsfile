@@ -7,11 +7,10 @@ pipeline {
         GITHUB_REPO_URL = 'https://github.com/Somya05M/BookWise.git'
         FRONTEND_DEPLOYMENT_FILE = 'frontend-deployment.yml'
         BACKEND_DEPLOYMENT_FILE = 'backend-deployment.yml'
-        KUBE_NAMESPACE = 'jenkins'  // Specify your namespace here
+        KUBE_NAMESPACE = 'jenkins'
     }
 
     stages {
-
         stage('Run Docker Containers') {
             steps {
                 script {
@@ -56,18 +55,22 @@ pipeline {
 
         stage('Deploy Frontend to Kubernetes') {
             steps {
-                script {
-                    // Deploy frontend to Kubernetes
-                    sh "kubectl apply -f ${env.FRONTEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
+                container('kubectl') {
+                    script {
+                        // Deploy frontend to Kubernetes
+                        sh "kubectl apply -f ${env.FRONTEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
+                    }
                 }
             }
         }
 
         stage('Deploy Backend to Kubernetes') {
             steps {
-                script {
-                    // Deploy backend to Kubernetes
-                    sh "kubectl apply -f ${env.BACKEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
+                container('kubectl') {
+                    script {
+                        // Deploy backend to Kubernetes
+                        sh "kubectl apply -f ${env.BACKEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
+                    }
                 }
             }
         }
