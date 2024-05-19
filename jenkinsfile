@@ -53,16 +53,20 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Deploy Frontend to Kubernetes') {
             steps {
                 script {
-                    // Deploy frontend to Kubernetes
-                    withCredentials([kubeconfigFile(credentialsId: 'jenkins-secret', variable: 'KUBECONFIG')]) {
-                        sh """
-                            export KUBECONFIG=\$KUBECONFIG
-                            kubectl apply -f ${FRONTEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}
-                        """
+                    // Retrieve Kubernetes configuration from Jenkins credentials
+                    withCredentials([string(credentialsId: 'jenkins-secret', variable: 'KUBECONFIG')]) {
+                        // Set KUBECONFIG environment variable
+                        sh "export KUBECONFIG=\$KUBECONFIG"
+
+                        // Check the value of KUBECONFIG
+                        sh "echo \$KUBECONFIG"
+
+                        // Deploy frontend to Kubernetes
+                        sh "kubectl apply -f ${FRONTEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
                     }
                 }
             }
@@ -71,12 +75,16 @@ pipeline {
         stage('Deploy Backend to Kubernetes') {
             steps {
                 script {
-                    // Deploy backend to Kubernetes
-                    withCredentials([kubeconfigFile(credentialsId: 'jenkins-secret', variable: 'KUBECONFIG')]) {
-                        sh """
-                            export KUBECONFIG=\$KUBECONFIG
-                            kubectl apply -f ${BACKEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}
-                        """
+                    // Retrieve Kubernetes configuration from Jenkins credentials
+                    withCredentials([string(credentialsId: 'jenkins-secret', variable: 'KUBECONFIG')]) {
+                        // Set KUBECONFIG environment variable
+                        sh "export KUBECONFIG=\$KUBECONFIG"
+
+                        // Check the value of KUBECONFIG
+                        sh "echo \$KUBECONFIG"
+
+                        // Deploy backend to Kubernetes
+                        sh "kubectl apply -f ${BACKEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
                     }
                 }
             }
