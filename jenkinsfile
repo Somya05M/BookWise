@@ -58,7 +58,7 @@ pipeline {
             steps {
                 script {
                     // Deploy frontend to Kubernetes
-                    withCredentials([kubeconfigFile(credentialsId: 'your-kubernetes-credentials-id', variable: 'KUBECONFIG')]) {
+                    withCredentials([kubeconfigFile(credentialsId: 'jenkins-secret', variable: 'KUBECONFIG')]) {
                         sh """
                             export KUBECONFIG=\$KUBECONFIG
                             kubectl apply -f ${FRONTEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}
@@ -72,7 +72,7 @@ pipeline {
             steps {
                 script {
                     // Deploy backend to Kubernetes
-                    withCredentials([kubeconfigFile(credentialsId: 'your-kubernetes-credentials-id', variable: 'KUBECONFIG')]) {
+                    withCredentials([kubeconfigFile(credentialsId: 'jenkins-secret', variable: 'KUBECONFIG')]) {
                         sh """
                             export KUBECONFIG=\$KUBECONFIG
                             kubectl apply -f ${BACKEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}
