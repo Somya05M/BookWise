@@ -1,5 +1,24 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml '''
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  containers:
+                  - name: maven
+                    image: maven:alpine
+                    command:
+                    - cat
+                    tty: true
+                  - name: docker
+                    image: docker:19.03.13
+                    command:
+                    - cat
+                    tty: true
+                '''
+        }
+    }
 
     environment {
         DOCKER_IMAGE_NAME_BACKEND = 'bookwise-backend'
@@ -11,29 +30,6 @@ pipeline {
     }
 
     stages {
-        stage('Setup Kubernetes Resources') {
-            agent {
-                kubernetes {
-                    // Use the Jenkins Kubernetes cloud configuration
-                    cloud 'kubernetes'
-                    inheritFrom 'build-pod'
-                    defaultContainer 'jnlp'
-                }
-            }
-            steps {
-                script {
-                    withCredentials([string(credentialsId: 'jenkins-secret')]) {
-                        try {
-                            // Create service account with admin permissions
-                            sh "kubectl apply -f service-account.yml -n ${env.KUBE_NAMESPACE}"
-                        } catch (Exception e) {
-                            error "Failed to setup Kubernetes resources: ${e.message}"
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Run Docker Containers') {
             steps {
                 script {
@@ -47,33 +43,29 @@ pipeline {
             }
         }
 
-        stage('Push Docker Images Frontend') {
+        stage('Build and Push Docker Images Frontend') {
             steps {
                 script {
-                    docker.withRegistry('', 'DockerHubCred') {
-                        try {
-                            // Tag and push Frontend Docker image to Docker Hub
-                            sh "docker tag ${DOCKER_IMAGE_NAME_FRONTEND} somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest"
-                            sh "docker push somya2001/${DOCKER_IMAGE_NAME_FRONTEND}"
-                        } catch (Exception e) {
-                            error "Failed to push Frontend Docker image: ${e.message}"
-                        }
+                    try {
+                        // Build and push Frontend Docker image to Docker Hub
+                        sh "docker build -t somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest ."
+                        sh "docker push somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest"
+                    } catch (Exception e) {
+                        error "Failed to build and push Frontend Docker image: ${e.message}"
                     }
                 }
             }
         }
 
-        stage('Push Docker Images Backend') {
+        stage('Build and Push Docker Images Backend') {
             steps {
                 script {
-                    docker.withRegistry('', 'DockerHubCred') {
-                        try {
-                            // Tag and push Backend Docker image to Docker Hub
-                            sh "docker tag ${DOCKER_IMAGE_NAME_BACKEND} somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest"
-                            sh "docker push somya2001/${DOCKER_IMAGE_NAME_BACKEND}"
-                        } catch (Exception e) {
-                            error "Failed to push Backend Docker image: ${e.message}"
-                        }
+                    try {
+                        // Build and push Backend Docker image to Docker Hub
+                        sh "docker build -t somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest ."
+                        sh "docker push somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest"
+                    } catch (Exception e) {
+                        error "Failed to build and push Backend Docker image: ${e.message}"
                     }
                 }
             }
@@ -93,14 +85,6 @@ pipeline {
         }
 
         stage('Deploy Frontend to Kubernetes') {
-            agent {
-                kubernetes {
-                    // Use the Jenkins Kubernetes cloud configuration
-                    cloud 'kubernetes'
-                    inheritFrom 'build-pod'
-                    defaultContainer 'jnlp'
-                }
-            }
             steps {
                 script {
                     try {
@@ -114,14 +98,6 @@ pipeline {
         }
 
         stage('Deploy Backend to Kubernetes') {
-            agent {
-                kubernetes {
-                    // Use the Jenkins Kubernetes cloud configuration
-                    cloud 'kubernetes'
-                    inheritFrom 'build-pod'
-                    defaultContainer 'jnlp'
-                }
-            }
             steps {
                 script {
                     try {
