@@ -131,14 +131,12 @@ pipeline {
             }
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'jenkins-secret')]) {
                         try {
                             // Ensure the environment variables are accessible within the script block
                             sh "kubectl apply -f ${env.FRONTEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
                         } catch (Exception e) {
                             error "Failed to deploy frontend to Kubernetes: ${e.message}"
                         }
-                    }
                 }
             }
         }
@@ -168,14 +166,12 @@ pipeline {
             }
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'jenkins-secret')]) {
                         try {
                             // Ensure the environment variables are accessible within the script block
                             sh "kubectl apply -f ${env.BACKEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
                         } catch (Exception e) {
                             error "Failed to deploy backend to Kubernetes: ${e.message}"
                         }
-                    }
                 }
             }
         }
