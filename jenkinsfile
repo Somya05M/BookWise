@@ -10,7 +10,37 @@ pipeline {
         KUBE_NAMESPACE = 'jenkins'  // Specify your namespace here
     }
 
-    stages {
+stages {
+        stage('Setup Kubernetes Resources') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'jenkins-secret')]) {
+                        try {
+                            // Create service account with admin permissions
+                            sh """
+                            kubectl apply -f ./kubernetes/jenkins/service-account.yml -n ${env.KUBE_NAMESPACE}
+                            """
+
+                            sh """
+                            kubectl apply -f ./kubernetes/jenkins/cluster-role-binding.yml -n ${env.KUBE_NAMESPACE}
+                            """
+
+                            // Create local persistent volume
+                            sh """
+                            kubectl apply -f ./kubernetes/jenkins/persistent-volume.yml -n ${env.KUBE_NAMESPACE}
+                            """
+
+                            sh """
+                            kubectl apply -f ./kubernetes/jenkins/persistent-volume-claim.yml -n ${env.KUBE_NAMESPACE}
+                            """
+                        } catch (Exception e) {
+                            error "Failed to setup Kubernetes resources: ${e.message}"
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Run Docker Containers') {
             steps {
                 script {
@@ -75,7 +105,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'jenkins-secret')]) {
                         try {
                             // Ensure the environment variables are accessible within the script block
-                            sh "kubectl apply -f ${env.FRONTEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
+                            sh "kubectl apply -f ./kubernetes/frontend/${env.FRONTEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
                         } catch (Exception e) {
                             error "Failed to deploy frontend to Kubernetes: ${e.message}"
                         }
@@ -90,7 +120,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'jenkins-secret')]) {
                         try {
                             // Ensure the environment variables are accessible within the script block
-                            sh "kubectl apply -f ${env.BACKEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
+                            sh "kubectl apply -f ./kubernetes/backend/${env.BACKEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
                         } catch (Exception e) {
                             error "Failed to deploy backend to Kubernetes: ${e.message}"
                         }
