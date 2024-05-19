@@ -1,5 +1,24 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            cloud 'kubernetes' // Name of your Kubernetes cloud instance in Jenkins
+            defaultContainer 'jnlp'
+            yaml """
+                apiVersion: v1
+                kind: Pod
+                metadata:
+                  labels:
+                    app: myapp
+                spec:
+                  containers:
+                  - name: docker
+                    image: docker:latest
+                    command:
+                    - sleep
+                    - infinity
+              """
+        }
+    }
 
     environment {
         DOCKER_IMAGE_NAME_BACKEND = 'bookwise-backend'
@@ -11,10 +30,9 @@ pipeline {
     }
 
     stages {
-
         stage('Run Docker Containers') {
             steps {
-                script {
+                container('docker') {
                     // Run Docker containers to build images
                     sh "docker-compose up -d --build"
                 }
@@ -23,7 +41,7 @@ pipeline {
 
         stage('Push Docker Images Frontend') {
             steps {
-                script {
+                container('docker') {
                     docker.withRegistry('', 'DockerHubCred') {
                         // Tag and push Frontend Docker image to Docker Hub
                         sh "docker tag ${DOCKER_IMAGE_NAME_FRONTEND} somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest"
@@ -35,7 +53,7 @@ pipeline {
 
         stage('Push Docker Images Backend') {
             steps {
-                script {
+                container('docker') {
                     docker.withRegistry('', 'DockerHubCred') {
                         // Tag and push Backend Docker image to Docker Hub
                         sh "docker tag ${DOCKER_IMAGE_NAME_BACKEND} somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest"
@@ -47,40 +65,22 @@ pipeline {
 
         stage('Unit Test') {
             steps {
-                script {
+                container('docker') {
                     // Run the Python test script directly
                     sh "python3 test.py"
                 }
             }
         }
 
-        stage('Deploy to kubernets'){
-            steps{
-                script{
-                        withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'jenkins-secret', namespace: 'jenkins', restrictKubeConfigAccess: false, serverUrl: '') {
-                        sh "kubectl apply -f ${FRONTEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
-                        sh "kubectl apply -f ${BACKEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
+        stage('Deploy to Kubernetes') {
+            steps {
+                container('docker') {
+                    withKubeConfig(credentialsId: 'jenkins-secret', namespace: "${KUBE_NAMESPACE}") {
+                        sh "kubectl apply -f ${FRONTEND_DEPLOYMENT_FILE}"
+                        sh "kubectl apply -f ${BACKEND_DEPLOYMENT_FILE}"
                     }
                 }
             }
         }
-
-        // stage('Deploy Frontend to Kubernetes') {
-        //     steps {
-        //         script {
-        //             // Deploy frontend to Kubernetes
-        //             sh "kubectl apply -f ${FRONTEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
-        //         }
-        //     }
-        // }
-
-        // stage('Deploy Backend to Kubernetes') {
-        //     steps {
-        //         script {
-        //             // Deploy backend to Kubernetes
-        //             sh "kubectl apply -f ${BACKEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
-        //         }
-        //     }
-        // }
     }
 }
