@@ -6,12 +6,12 @@ pipeline {
                 kind: Pod
                 spec:
                   containers:
-                  - name: maven
-                    image: maven:alpine
+                  - name: frontend-builder
+                    image: docker:19.03.13
                     command:
                     - cat
                     tty: true
-                  - name: docker
+                  - name: backend-builder
                     image: docker:19.03.13
                     command:
                     - cat
