@@ -16,22 +16,8 @@ pipeline {
                 kubernetes {
                     // Use the Jenkins Kubernetes cloud configuration
                     cloud 'kubernetes'
-                    label 'build-pod'
+                    inheritFrom 'build-pod'
                     defaultContainer 'jnlp'
-                    yaml """
-                    apiVersion: v1
-                    kind: Pod
-                    metadata:
-                      labels:
-                        jenkins: build-pod
-                    spec:
-                      containers:
-                      - name: docker
-                        image: docker:19.03.12
-                        command:
-                        - cat
-                        tty: true
-                    """
                 }
             }
             steps {
@@ -111,32 +97,18 @@ pipeline {
                 kubernetes {
                     // Use the Jenkins Kubernetes cloud configuration
                     cloud 'kubernetes'
-                    label 'build-pod'
+                    inheritFrom 'build-pod'
                     defaultContainer 'jnlp'
-                    yaml """
-                    apiVersion: v1
-                    kind: Pod
-                    metadata:
-                      labels:
-                        jenkins: build-pod
-                    spec:
-                      containers:
-                      - name: docker
-                        image: docker:19.03.12
-                        command:
-                        - cat
-                        tty: true
-                    """
                 }
             }
             steps {
                 script {
-                        try {
-                            // Ensure the environment variables are accessible within the script block
-                            sh "kubectl apply -f ${env.FRONTEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
-                        } catch (Exception e) {
-                            error "Failed to deploy frontend to Kubernetes: ${e.message}"
-                        }
+                    try {
+                        // Ensure the environment variables are accessible within the script block
+                        sh "kubectl apply -f ${env.FRONTEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
+                    } catch (Exception e) {
+                        error "Failed to deploy frontend to Kubernetes: ${e.message}"
+                    }
                 }
             }
         }
@@ -146,32 +118,18 @@ pipeline {
                 kubernetes {
                     // Use the Jenkins Kubernetes cloud configuration
                     cloud 'kubernetes'
-                    label 'build-pod'
+                    inheritFrom 'build-pod'
                     defaultContainer 'jnlp'
-                    yaml """
-                    apiVersion: v1
-                    kind: Pod
-                    metadata:
-                      labels:
-                        jenkins: build-pod
-                    spec:
-                      containers:
-                      - name: docker
-                        image: docker:19.03.12
-                        command:
-                        - cat
-                        tty: true
-                    """
                 }
             }
             steps {
                 script {
-                        try {
-                            // Ensure the environment variables are accessible within the script block
-                            sh "kubectl apply -f ${env.BACKEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
-                        } catch (Exception e) {
-                            error "Failed to deploy backend to Kubernetes: ${e.message}"
-                        }
+                    try {
+                        // Ensure the environment variables are accessible within the script block
+                        sh "kubectl apply -f ${env.BACKEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
+                    } catch (Exception e) {
+                        error "Failed to deploy backend to Kubernetes: ${e.message}"
+                    }
                 }
             }
         }
