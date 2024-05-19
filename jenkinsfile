@@ -80,7 +80,7 @@ pipeline {
             steps {
                 script {
                     // Deploy backend to Kubernetes
-                    sh "kubectl apply -f ${env.BACKEND_DEPLOYMENT_FILE} --validate=false"
+                    sh "kubectl apply -f ${env.BACKEND_DEPLOYMENT_FILE}"
                 }
             }
         }
