@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flask-backend
+  name: bookwise-backend
   namespace: jenkins  # Specify the namespace here
 spec:
   selector:
     matchLabels:
-      app: flask-backend
+      app: bookwise-backend
   template:
     metadata:
       labels:
-        app: flask-backend
+        app: bookwise-backend
     spec:
       containers:
-      - name: flask-backend
-        image: somya2001/flask-backend:latest
+      - name: bookwise-backend
+        image: somya2001/bookwise-backend:latest
         ports:
         - containerPort: 8081
         env:
@@ -23,12 +23,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: flask-backend-service
+  name: bookwise-backend-service
   namespace: jenkins  # Specify the namespace here
 spec:
   type: ClusterIP
   selector:
-    app: flask-backend
+    app: bookwise-backend
   ports:
   - port: 8081
     targetPort: 8081
