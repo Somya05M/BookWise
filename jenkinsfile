@@ -33,12 +33,10 @@ pipeline {
 
         stage('Run Docker Containers') {
             steps {
-                container('docker') {
                     script {
                         // Run Docker containers to build images
                         sh "docker-compose up -d --build"
                     }
-                }
             }
         }
 
@@ -72,12 +70,10 @@ pipeline {
 
         stage('Unit Test') {
             steps {
-                container('docker') {
                     script {
                         // Run the Python test script directly
                         sh "python3 test.py"
                     }
-                }
             }
         }
 
