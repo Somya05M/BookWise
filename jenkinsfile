@@ -22,7 +22,7 @@ stages {
                             """
 
                             sh """
-                            kubectl apply -f ./kubernetes/jenkins/cluster-role-binding.yml -n ${env.KUBE_NAMESPACE}
+                            kubectl apply -f ./kubernetes/jenkins/jenkins-service.yml -n ${env.KUBE_NAMESPACE}
                             """
 
                             // Create local persistent volume
@@ -31,7 +31,7 @@ stages {
                             """
 
                             sh """
-                            kubectl apply -f ./kubernetes/jenkins/persistent-volume-claim.yml -n ${env.KUBE_NAMESPACE}
+                            kubectl apply -f ./kubernetes/jenkins/jenkins-deployment.yml -n ${env.KUBE_NAMESPACE}
                             """
                         } catch (Exception e) {
                             error "Failed to setup Kubernetes resources: ${e.message}"
