@@ -30,16 +30,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                container('docker') {
-                    script {
-                        // Clone the repository
-                        sh "git clone ${GITHUB_REPO_URL} ."
-                    }
-                }
-            }
-        }
 
         stage('Run Docker Containers') {
             steps {
