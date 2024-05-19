@@ -6,9 +6,6 @@ pipeline {
                 kind: Pod
                 spec:
                   containers:
-                  - name: jnlp
-                    image: 'jenkins/inbound-agent:4.13-4'
-                    tty: true
                   - name: frontend-builder
                     image: 'docker:19.03.13'
                     command:
