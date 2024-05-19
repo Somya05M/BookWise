@@ -58,13 +58,7 @@ pipeline {
             steps {
                 script {
                     // Retrieve Kubernetes configuration from Jenkins credentials
-                    withCredentials([string(credentialsId: 'jenkins-secret', variable: 'KUBECONFIG')]) {
-                        // Set KUBECONFIG environment variable
-                        sh "export KUBECONFIG=\$KUBECONFIG"
-
-                        // Check the value of KUBECONFIG
-                        sh "echo \$KUBECONFIG"
-
+                    withCredentials([string(credentialsId: 'jenkins-secret')]) {
                         // Deploy frontend to Kubernetes
                         sh "kubectl apply -f ${FRONTEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
                     }
@@ -76,13 +70,7 @@ pipeline {
             steps {
                 script {
                     // Retrieve Kubernetes configuration from Jenkins credentials
-                    withCredentials([string(credentialsId: 'jenkins-secret', variable: 'KUBECONFIG')]) {
-                        // Set KUBECONFIG environment variable
-                        sh "export KUBECONFIG=\$KUBECONFIG"
-
-                        // Check the value of KUBECONFIG
-                        sh "echo \$KUBECONFIG"
-
+                    withCredentials([string(credentialsId: 'jenkins-secret')]) {
                         // Deploy backend to Kubernetes
                         sh "kubectl apply -f ${BACKEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
                     }
