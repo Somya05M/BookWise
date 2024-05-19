@@ -34,18 +34,18 @@ pipeline {
                     """
                 }
             }
-            steps {
-                script {
-                    withCredentials([string(credentialsId: 'jenkins-secret')]) {
-                        try {
-                            // Create service account with admin permissions
-                            sh "kubectl apply -f service-account.yml -n ${env.KUBE_NAMESPACE}"
-                        } catch (Exception e) {
-                            error "Failed to setup Kubernetes resources: ${e.message}"
-                        }
-                    }
-                }
-            }
+            // steps {
+            //     script {
+            //         withCredentials([string(credentialsId: 'jenkins-secret')]) {
+            //             try {
+            //                 // Create service account with admin permissions
+            //                 sh "kubectl apply -f service-account.yml -n ${env.KUBE_NAMESPACE}"
+            //             } catch (Exception e) {
+            //                 error "Failed to setup Kubernetes resources: ${e.message}"
+            //             }
+            //         }
+            //     }
+            // }
         }
 
         stage('Run Docker Containers') {
