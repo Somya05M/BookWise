@@ -1,5 +1,25 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            cloud 'kubernetes'
+            label 'build-pod'
+            defaultContainer 'jnlp'
+            yaml """
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              labels:
+                jenkins: build-pod
+            spec:
+              containers:
+              - name: docker
+                image: docker:19.03.12
+                command:
+                - cat
+                tty: true
+            """
+        }
+    }
 
     environment {
         DOCKER_IMAGE_NAME_BACKEND = 'bookwise-backend'
@@ -11,43 +31,6 @@ pipeline {
     }
 
     stages {
-        stage('Setup Kubernetes Resources') {
-            agent {
-                kubernetes {
-                    // Use the Jenkins Kubernetes cloud configuration
-                    cloud 'kubernetes'
-                    label 'build-pod'
-                    defaultContainer 'jnlp'
-                    yaml """
-                    apiVersion: v1
-                    kind: Pod
-                    metadata:
-                      labels:
-                        jenkins: build-pod
-                    spec:
-                      containers:
-                      - name: docker
-                        image: docker:19.03.12
-                        command:
-                        - cat
-                        tty: true
-                    """
-                }
-            }
-            // steps {
-            //     script {
-            //         withCredentials([string(credentialsId: 'jenkins-secret')]) {
-            //             try {
-            //                 // Create service account with admin permissions
-            //                 sh "kubectl apply -f service-account.yml -n ${env.KUBE_NAMESPACE}"
-            //             } catch (Exception e) {
-            //                 error "Failed to setup Kubernetes resources: ${e.message}"
-            //             }
-            //         }
-            //     }
-            // }
-        }
-
         stage('Run Docker Containers') {
             steps {
                 script {
@@ -64,14 +47,12 @@ pipeline {
         stage('Push Docker Images Frontend') {
             steps {
                 script {
-                    docker.withRegistry('', 'DockerHubCred') {
-                        try {
-                            // Tag and push Frontend Docker image to Docker Hub
-                            sh "docker tag ${DOCKER_IMAGE_NAME_FRONTEND} somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest"
-                            sh "docker push somya2001/${DOCKER_IMAGE_NAME_FRONTEND}"
-                        } catch (Exception e) {
-                            error "Failed to push Frontend Docker image: ${e.message}"
-                        }
+                    try {
+                        // Tag and push Frontend Docker image to Docker Hub
+                        sh "docker tag ${DOCKER_IMAGE_NAME_FRONTEND} somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest"
+                        sh "docker push somya2001/${DOCKER_IMAGE_NAME_FRONTEND}"
+                    } catch (Exception e) {
+                        error "Failed to push Frontend Docker image: ${e.message}"
                     }
                 }
             }
@@ -80,14 +61,12 @@ pipeline {
         stage('Push Docker Images Backend') {
             steps {
                 script {
-                    docker.withRegistry('', 'DockerHubCred') {
-                        try {
-                            // Tag and push Backend Docker image to Docker Hub
-                            sh "docker tag ${DOCKER_IMAGE_NAME_BACKEND} somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest"
-                            sh "docker push somya2001/${DOCKER_IMAGE_NAME_BACKEND}"
-                        } catch (Exception e) {
-                            error "Failed to push Backend Docker image: ${e.message}"
-                        }
+                    try {
+                        // Tag and push Backend Docker image to Docker Hub
+                        sh "docker tag ${DOCKER_IMAGE_NAME_BACKEND} somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest"
+                        sh "docker push somya2001/${DOCKER_IMAGE_NAME_BACKEND}"
+                    } catch (Exception e) {
+                        error "Failed to push Backend Docker image: ${e.message}"
                     }
                 }
             }
@@ -109,13 +88,13 @@ pipeline {
         stage('Deploy Frontend to Kubernetes') {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'jenkins-secret')]) {
-                        try {
-                            // Ensure the environment variables are accessible within the script block
-                            sh "kubectl apply -f ${env.FRONTEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
-                        } catch (Exception e) {
-                            error "Failed to deploy frontend to Kubernetes: ${e.message}"
+                    try {
+                        // Deploy frontend to Kubernetes
+                        withCredentials([string(credentialsId: 'jenkins-secret')]) {
+                            sh "kubectl apply -f ${FRONTEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
                         }
+                    } catch (Exception e) {
+                        error "Failed to deploy frontend to Kubernetes: ${e.message}"
                     }
                 }
             }
@@ -124,13 +103,13 @@ pipeline {
         stage('Deploy Backend to Kubernetes') {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'jenkins-secret')]) {
-                        try {
-                            // Ensure the environment variables are accessible within the script block
-                            sh "kubectl apply -f ${env.BACKEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE}"
-                        } catch (Exception e) {
-                            error "Failed to deploy backend to Kubernetes: ${e.message}"
+                    try {
+                        // Deploy backend to Kubernetes
+                        withCredentials([string(credentialsId: 'jenkins-secret')]) {
+                            sh "kubectl apply -f ${BACKEND_DEPLOYMENT_FILE} -n ${KUBE_NAMESPACE}"
                         }
+                    } catch (Exception e) {
+                        error "Failed to deploy backend to Kubernetes: ${e.message}"
                     }
                 }
             }
