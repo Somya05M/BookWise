@@ -10,26 +10,16 @@ pipeline {
                     image: 'jenkins/inbound-agent:4.13-4'
                     tty: true
                   - name: frontend-builder
-                    image: docker:19.03.13
+                    image: 'docker:19.03.13'
                     command:
                     - cat
                     tty: true
                   - name: backend-builder
-                    image: docker:19.03.13
+                    image: 'docker:19.03.13'
                     command:
                     - cat
                     tty: true
             '''
-            containerTemplate {
-                name 'frontend-builder'
-                image 'docker:19.03.13'
-                tty true
-            }
-            containerTemplate {
-                name 'backend-builder'
-                image 'docker:19.03.13'
-                tty true
-            }
         }
     }
 
