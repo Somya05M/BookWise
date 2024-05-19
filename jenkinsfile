@@ -17,22 +17,14 @@ stages {
                     withCredentials([string(credentialsId: 'jenkins-secret')]) {
                         try {
                             // Create service account with admin permissions
-                            sh """
-                            kubectl apply -f ./kubernetes/jenkins/service-account.yml -n ${env.KUBE_NAMESPACE}
-                            """
+                            sh "kubectl apply -f ./kubernetes/jenkins/service-account.yml -n ${env.KUBE_NAMESPACE}"
 
-                            sh """
-                            kubectl apply -f ./kubernetes/jenkins/jenkins-service.yml -n ${env.KUBE_NAMESPACE}
-                            """
+                            sh "kubectl apply -f ./kubernetes/jenkins/jenkins-service.yml -n ${env.KUBE_NAMESPACE}"
 
                             // Create local persistent volume
-                            sh """
-                            kubectl apply -f ./kubernetes/jenkins/persistent-volume.yml -n ${env.KUBE_NAMESPACE}
-                            """
+                            sh "kubectl apply -f ./kubernetes/jenkins/persistent-volume.yml -n ${env.KUBE_NAMESPACE}"
 
-                            sh """
-                            kubectl apply -f ./kubernetes/jenkins/jenkins-deployment.yml -n ${env.KUBE_NAMESPACE}
-                            """
+                            sh "kubectl apply -f ./kubernetes/jenkins/jenkins-deployment.yml -n ${env.KUBE_NAMESPACE}"
                         } catch (Exception e) {
                             error "Failed to setup Kubernetes resources: ${e.message}"
                         }
