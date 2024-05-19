@@ -11,11 +11,21 @@ pipeline {
                     command:
                     - cat
                     tty: true
+                    volumeMounts:
+                    - name: dockersock
+                      mountPath: /var/run/docker.sock
                   - name: backend-builder
                     image: 'docker:19.03.13'
                     command:
                     - cat
                     tty: true
+                    volumeMounts:
+                    - name: dockersock
+                      mountPath: /var/run/docker.sock
+                  volumes:
+                  - name: dockersock
+                    hostPath:
+                      path: /var/run/docker.sock
             '''
         }
     }
@@ -26,7 +36,7 @@ pipeline {
         GITHUB_REPO_URL = 'https://github.com/Somya05M/BookWise.git'
         FRONTEND_DEPLOYMENT_FILE = 'frontend-deployment.yml'
         BACKEND_DEPLOYMENT_FILE = 'backend-deployment.yml'
-        KUBE_NAMESPACE = 'jenkins'  // Specify your namespace here
+        KUBE_NAMESPACE = 'jenkins'
         KUBE_CONTEXT = 'your-kube-context'  // Specify your Kubernetes context here
     }
 
