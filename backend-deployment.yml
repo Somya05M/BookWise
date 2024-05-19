@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-backend
+spec:
+  selector:
+    matchLabels:
+      app: flask-backend
+  template:
+    metadata:
+      labels:
+        app: flask-backend
+    spec:
+      containers:
+      - name: flask-backend
+        image: somya2001/flask-backend:latest
+        ports:
+        - containerPort: 8081
+        env:
+        - name: CORS_ALLOWED_ORIGINS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-backend-service
+spec:
+  type: ClusterIP
+  selector:
+    app: flask-backend
+  ports:
+  - port: 8081
+    targetPort: 8081
