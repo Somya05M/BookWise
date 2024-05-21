@@ -6,7 +6,7 @@ import requests
 
 class TestApp(unittest.TestCase):
     def setUp(self):
-        self.app_url = "http://localhost:8081"  # Change to your backend URL
+        self.app_url = "http://localhost:8081"  
         self.headers = {'Content-Type': 'application/json'}
 
     def tearDown(self):
