@@ -1,91 +1,45 @@
 pipeline {
-    agent {
-        kubernetes {
-            yaml '''
-                apiVersion: v1
-                kind: Pod
-                spec:
-                  containers:
-                  - name: docker
-                    image: 'docker:19.03.13'
-                    command:
-                    - cat
-                    tty: true
-                    volumeMounts:
-                    - name: dockersock
-                      mountPath: /var/run/docker.sock
-                  - name: python
-                    image: 'python:3.9'
-                    command:
-                    - cat
-                    tty: true
-                  - name: kubectl
-                    image: 'lachlanevenson/k8s-kubectl:v1.22.2'
-                    command:
-                    - cat
-                    tty: true
-                  volumes:
-                  - name: dockersock
-                    hostPath:
-                      path: /var/run/docker.sock
-            '''
-        }
-    }
+    agent any
 
     environment {
         DOCKER_IMAGE_NAME_BACKEND = 'bookwise-backend'
         DOCKER_IMAGE_NAME_FRONTEND = 'bookwise-frontend'
         GITHUB_REPO_URL = 'https://github.com/Somya05M/BookWise.git'
-        FRONTEND_DEPLOYMENT_FILE = 'frontend-deployment.yml'
-        BACKEND_DEPLOYMENT_FILE = 'backend-deployment.yml'
-        KUBE_NAMESPACE = 'jenkins'
-        KUBE_CONTEXT = 'your-kube-context'  // Specify your Kubernetes context here
+        DOCKER_COMPOSE_FILE = 'docker-compose.yml'
+        NOTEBOOK_FILENAME = 'book-recommender-system.py'
+        KUBECONFIG = credentials('jenkins-secret')
     }
 
     stages {
-        stage('Run Docker Containers') {
+
+        stage('Run Docker Compose') {
             steps {
-                container('docker') {
-                    script {
-                        try {
-                            // Run Docker containers to build images
-                            sh "docker build -t ${DOCKER_IMAGE_NAME_BACKEND} ."
-                            sh "docker build -t ${DOCKER_IMAGE_NAME_FRONTEND} ."
-                        } catch (Exception e) {
-                            error "Failed to run Docker containers: ${e.message}"
-                        }
+                script {
+                    // Run docker-compose
+                    sh "docker-compose -f ${env.DOCKER_COMPOSE_FILE} up -d"
+                }
+            }
+        }
+
+        stage('Push Docker Images Frontend') {
+            steps {
+                script {
+                    docker.withRegistry('', 'DockerHubCred') {
+                        // Tag and push Frontend Docker image to Docker Hub
+                        sh "docker tag bookwise-frontend somya2001/${env.DOCKER_IMAGE_NAME_FRONTEND}:latest"
+                        sh "docker push somya2001/${env.DOCKER_IMAGE_NAME_FRONTEND}"
                     }
                 }
             }
         }
 
-        stage('Build and Push Docker Images Frontend') {
+        stage('Push Docker Images Backend') {
             steps {
-                container('docker') {
-                    script {
-                        try {
-                            // Build and push Frontend Docker image to Docker Hub
-                            sh "docker build -t somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest ."
-                            sh "docker push somya2001/${DOCKER_IMAGE_NAME_FRONTEND}:latest"
-                        } catch (Exception e) {
-                            error "Failed to build and push Frontend Docker image: ${e.message}"
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Build and Push Docker Images Backend') {
-            steps {
-                container('docker') {
-                    script {
-                        try {
-                            // Build and push Backend Docker image to Docker Hub
-                            sh "docker build -t somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest ."
-                            sh "docker push somya2001/${DOCKER_IMAGE_NAME_BACKEND}:latest"
-                        } catch (Exception e) {
-                            error "Failed to build and push Backend Docker image: ${e.message}"
-                        }
+                script {
+                    docker.withRegistry('', 'DockerHubCred') {
+                        // Tag and push Backend Docker image to Docker Hub
+                        sh "docker tag bookwise-backend somya2001/${env.DOCKER_IMAGE_NAME_BACKEND}:latest"
+                        sh "docker push somya2001/${env.DOCKER_IMAGE_NAME_BACKEND}"
                     }
                 }
             }
@@ -93,43 +47,29 @@ pipeline {
 
         stage('Unit Test') {
             steps {
-                container('docker') {
-                    script {
-                        try {
-                            // Run the Python test script directly
-                            sh "python3 test.py"
-                        } catch (Exception e) {
-                            error "Unit tests failed: ${e.message}"
-                        }
-                    }
+                script {
+                    // Run the Python test script directly
+                    sh "python3 test.py"
                 }
             }
         }
 
-        stage('Deploy Frontend to Kubernetes') {
+        stage('Stop Docker Compose') {
             steps {
-                container('kubectl') {
-                    script {
-                        try {
-                            // Deploy frontend to Kubernetes
-                            sh "kubectl apply -f ${env.FRONTEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE} --context=${KUBE_CONTEXT}"
-                        } catch (Exception e) {
-                            error "Failed to deploy frontend to Kubernetes: ${e.message}"
-                        }
-                    }
+                script {
+                    // Delete running container
+                    sh "docker-compose -f ${env.DOCKER_COMPOSE_FILE} down"
                 }
             }
         }
 
-        stage('Deploy Backend to Kubernetes') {
+        stage('Deploy to Kubernetes') {
             steps {
-                container('kubectl') {
-                    script {
-                        try {
-                            // Deploy backend to Kubernetes
-                            sh "kubectl apply -f ${env.BACKEND_DEPLOYMENT_FILE} -n ${env.KUBE_NAMESPACE} --context=${KUBE_CONTEXT}"
-                        } catch (Exception e) {
-                            error "Failed to deploy backend to Kubernetes: ${e.message}"
+                script {
+                    dir('SPE Major Project') {
+                        withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8ss', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
+                            sh 'kubectl apply -f frontend-deployment.yml --validate=false'
+                            sh 'kubectl apply -f backend-deployment.yml --validate=false'
                         }
                     }
                 }
