@@ -7,7 +7,6 @@ pipeline {
         GITHUB_REPO_URL = 'https://github.com/Somya05M/BookWise.git'
         DOCKER_COMPOSE_FILE = 'docker-compose.yml'
         NOTEBOOK_FILENAME = 'book-recommender-system.py'
-        KUBECONFIG = credentials('jenkins-secret')
     }
 
     stages {
@@ -67,7 +66,7 @@ pipeline {
             steps {
                 script {
                     dir('SPE Major Project') {
-                        withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8ss', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
+                        withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'jenkins-secret', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
                             sh 'kubectl apply -f frontend-deployment.yml --validate=false'
                             sh 'kubectl apply -f backend-deployment.yml --validate=false'
                         }
