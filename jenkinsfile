@@ -53,15 +53,6 @@ pipeline {
             }
         }
 
-        stage('Stop Docker Compose') {
-            steps {
-                script {
-                    // Delete running container
-                    sh "docker-compose -f ${env.DOCKER_COMPOSE_FILE} down"
-                }
-            }
-        }
-
         stage('Deploy to Kubernetes') {
             steps {
                 script {
