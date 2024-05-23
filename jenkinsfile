@@ -56,11 +56,9 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    dir('SPE Major Project') {
-                        withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'jenkins-secret', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
-                            sh 'kubectl apply -f frontend-deployment.yml --validate=false'
-                            sh 'kubectl apply -f backend-deployment.yml --validate=false'
-                        }
+                    withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'jenkins-secret', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
+                        sh 'kubectl apply -f frontend-deployment.yml --validate=false'
+                        sh 'kubectl apply -f backend-deployment.yml --validate=false'
                     }
                 }
             }
